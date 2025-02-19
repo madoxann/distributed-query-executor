@@ -1,17 +1,22 @@
 #pragma once
 
 #include "arrow/flight/sql/server.h"
+#include "arrow/flight/types.h"
 #include "arrow/result.h"
 #include "sqlite3.h"
-#include "statement.h"
-#include "statement_batch_reader.h"
 
-namespace arrow_sql_bridge {
-class flight_sql_server : public arrow::flight::sql::FlightSqlServerBase {
+#include <list>
+#include <utility>
+
+namespace arrow_sql_router {
+class flight_sql_router : public arrow::flight::sql::FlightSqlServerBase {
 public:
-  ~flight_sql_server() override = default;
+  ~flight_sql_router() override = default;
 
-  static arrow::Result<std::shared_ptr<flight_sql_server>> make(const std::string& path);
+  static arrow::Result<std::shared_ptr<flight_sql_router>> make(
+      const std::list<arrow::flight::Location>& nodes,
+      uint8_t receiver
+  ); // tmp receiver - No. of node that will answer
 
   arrow::Result<std::unique_ptr<arrow::flight::FlightInfo>> GetFlightInfoStatement(
       const arrow::flight::ServerCallContext& context,
@@ -28,6 +33,6 @@ private:
   class impl;
   std::shared_ptr<impl> impl_ptr;
 
-  explicit flight_sql_server(std::shared_ptr<impl> impl);
+  explicit flight_sql_router(std::shared_ptr<impl> impl);
 };
-} // namespace arrow_sql_bridge
+} // namespace arrow_sql_router

@@ -2,9 +2,8 @@
 
 #include "arrow/builder.h"
 #include "arrow/record_batch.h"
+#include "sqlite3.h"
 #include "statement.h"
-
-#include <sqlite3.h>
 
 #include <memory>
 

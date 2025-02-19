@@ -7,7 +7,7 @@ class flight_sql_server::impl {
 private:
   sqlite3* db;
 
-  arrow::Result<flight::Ticket> make_ticket(const std::string& query) {
+  static arrow::Result<flight::Ticket> make_ticket(const std::string& query) {
     ARROW_ASSIGN_OR_RAISE(auto ticket_string, flight::sql::CreateStatementQueryTicket(query));
     return flight::Ticket{std::move(ticket_string)};
   }
@@ -21,7 +21,7 @@ public:
   }
 
   arrow::Result<std::unique_ptr<flight::FlightInfo>> GetFlightInfoStatement(
-      const flight::ServerCallContext& context,
+      const flight::ServerCallContext&,
       const flight::sql::StatementQuery& command,
       const flight::FlightDescriptor& descriptor
   ) {

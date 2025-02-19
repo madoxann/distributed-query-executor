@@ -1,9 +1,9 @@
 #pragma once
 
-#include <arrow/flight/sql/api.h>
-#include <arrow/result.h>
-#include <arrow/status.h>
-#include <arrow/table.h>
+#include "arrow/flight/sql/api.h"
+#include "arrow/result.h"
+#include "arrow/status.h"
+#include "arrow/table.h"
 
 #include <memory>
 #include <string>

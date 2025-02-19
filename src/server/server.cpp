@@ -1,5 +1,8 @@
 #include "server.h"
 
+namespace fs = std::filesystem;
+namespace flight = arrow::flight;
+
 std::string get_env_or_default(const std::string& var_name, const std::string& default_value) {
   const char* value = std::getenv(var_name.c_str());
   return value ? std::string(value) : default_value;

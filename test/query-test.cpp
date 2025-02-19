@@ -1,14 +1,16 @@
 #include "../src/client/client.h"
 #include "../src/server/server.h"
-
-#include <arrow/table.h>
-#include <gtest/gtest.h>
+#include "test_ultis.h"
 
 #include <atomic>
 #include <chrono>
 #include <cstdio>
 #include <iostream>
 #include <thread>
+
+namespace fs = std::filesystem;
+namespace flight = arrow::flight;
+namespace po = boost::program_options;
 
 std::atomic<bool> running(false);
 
@@ -57,49 +59,6 @@ protected:
   }
 };
 
-template <typename T>
-void check_column_values(const std::shared_ptr<arrow::Array>& array, const std::vector<T>& expected_values) {
-  auto typed_array = std::static_pointer_cast<typename arrow::CTypeTraits<T>::ArrayType>(array);
-  ASSERT_EQ(typed_array->length(), expected_values.size()) << "Column length mismatch";
-
-  for (int64_t i = 0; i < typed_array->length(); ++i) {
-    ASSERT_EQ(typed_array->Value(i), expected_values[i]) << "Value mismatch at row " << i;
-  }
-}
-
-void check_string_column_values(
-    const std::shared_ptr<arrow::Array>& array,
-    const std::vector<std::string>& expected_values
-) {
-  auto string_array = std::static_pointer_cast<arrow::StringArray>(array);
-  ASSERT_EQ(string_array->length(), expected_values.size()) << "Column length mismatch";
-
-  for (int64_t i = 0; i < string_array->length(); ++i) {
-    ASSERT_EQ(string_array->GetString(i), expected_values[i]) << "Value mismatch at row " << i;
-  }
-}
-
-template <typename T>
-void verify_column(
-    const std::shared_ptr<arrow::Table>& table,
-    int column_index,
-    const std::vector<T>& expected_values
-) {
-  auto column = table->column(column_index);
-  ASSERT_EQ(column->num_chunks(), 1) << "Expected single chunk";
-  check_column_values(column->chunk(0), expected_values);
-}
-
-void verify_string_column(
-    const std::shared_ptr<arrow::Table>& table,
-    int column_index,
-    const std::vector<std::string>& expected_values
-) {
-  auto column = table->column(column_index);
-  ASSERT_EQ(column->num_chunks(), 1) << "Expected single chunk";
-  check_string_column_values(column->chunk(0), expected_values);
-}
-
 TEST_F(FlightSQLTest, SimpleCorrectQueryTest) {
   auto status = execute("create table Groups (group_id int, group_no char(6));");
   ASSERT_TRUE(status.ok()) << "Query execution failed: " << status.status().ToString();
@@ -120,7 +79,7 @@ TEST_F(FlightSQLTest, SimpleCorrectQueryValueTest) {
   status = execute("insert into Groups values (1, 'M3132'), (2, 'M3435');");
   ASSERT_TRUE(status.ok()) << "Query execution failed: " << status.status().ToString();
 
-  auto result = execute_sql_query(hostname, port, "select * from Groups;");
+  auto result = execute("select * from Groups;");
   ASSERT_TRUE(result.ok()) << "Query execution failed: " << result.status().ToString();
 
   auto table = result.ValueOrDie();
